@@ -139,7 +139,7 @@ resource "aws_instance" "myapp-server" {
   associate_public_ip_address = true
   key_name = aws_key_pair.ssh-key.id
 
-  user_data = <<EOF
+  user_data = <<-EOF
                   #!/bin/bash
                   sudo yum update -y && sudo yum install docker -y
                   sudo systemctl start docker
