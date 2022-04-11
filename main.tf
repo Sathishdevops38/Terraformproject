@@ -139,15 +139,33 @@ resource "aws_instance" "myapp-server" {
   associate_public_ip_address = true
   key_name = aws_key_pair.ssh-key.id
 
-  user_data = <<-EOF
-                  #!/bin/bash
-                  sudo yum update -y && sudo yum install docker -y
-                  sudo systemctl start docker
-                  sudo systemctl enable docker 
-                  sudo usermod -aG docker ec2-user
-                  docker run -p 8080:80 nginx
-              EOF
+  #user_data = file("entry-script.sh")
 
+  connection {
+    type = "ssh"
+    host = self.public_ip   
+    user = "ec2-user"
+    private_key = file(var.private_key_location)
+  }
+  /*
+  provisioner "remote-exec" {
+    inline = [
+      "export ENV=dev",
+      "mkdir newdir"
+    ]
+  }
+*/
+provisioner "file" {
+  source = "entry-script.sh"
+  destination = "/home/ec2-user/entry-script-on-ec2.sh"
+}
+provisioner "remote-exec" {
+    script = file("/home/ec2-user/entry-script-on-ec2.sh")
+}
+
+provisioner "local-exec" {
+  command = "echo ${self.public_ip} > output.txt"
+}
   tags = {
     "Name" = "${var.env_prefix}-server"
   }
