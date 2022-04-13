@@ -61,3 +61,19 @@ resource "aws_nat_gateway" "NAT" {
   # on the Internet Gateway for the VPC.
   depends_on = [aws_internet_gateway.igw]
 }
+
+resource "aws_route_table" "priRT"{
+    vpc_id = aws_vpc.vpc.id 
+    route {
+        cidr_block = "0.0.0.0/0"
+        nat_gateway_id = aws_nat_gateway.NAT.id 
+        }
+    tags = {
+           Name = "${var.env_prefix}-NAT" 
+    }
+}
+
+resource "aws_route_table_association" "RTA" {
+  subnet_id      = aws_subnet.private.id
+  route_table_id = aws_route_table.priRT.id
+}
