@@ -77,3 +77,33 @@ resource "aws_route_table_association" "RTA" {
   subnet_id      = aws_subnet.private.id
   route_table_id = aws_route_table.priRT.id
 }
+
+data "aws_ami" "latest-linux-image" {
+    most_recent = true
+    owners = ["amazon"]
+    filter {
+        name = "name"
+        values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+    } 
+    filter {
+        name = "virtualization-type"
+        values = ["hvm"]
+    } 
+}
+output "aws_ami_id" {
+  value = data.aws_ami.latest-linux-image.id
+}
+
+resource "aws_key_pair" "ssh-key" {
+  key_name = "server-key"
+  public_key = file(var.public_key_location)
+  
+}
+resource "aws_instance" "ec2"{
+    ami = data.aws_ami.latest-linux-image.id
+    instance_type = var.instance_type
+    vpc_id = aws_vpc.vpc.id
+    subnet_id = aws_subnet.public_id
+    key_pair = "server-key"
+
+}
