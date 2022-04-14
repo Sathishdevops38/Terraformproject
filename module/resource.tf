@@ -73,9 +73,26 @@ resource "aws_route_table" "priRT"{
     }
 }
 
+resource "aws_route_table" "pubRT"{
+    vpc_id = aws_vpc.vpc.id 
+    route {
+        cidr_block = "0.0.0.0/0"
+        nat_gateway_id = aws_internet_gateway.igw.id
+        }
+    tags = {
+           Name = "${var.env_prefix}-IGW" 
+    }
+}
+
+
 resource "aws_route_table_association" "RTA" {
   subnet_id      = aws_subnet.private.id
   route_table_id = aws_route_table.priRT.id
+}
+
+resource "aws_route_table_association" "RTA1" {
+  subnet_id      = aws_subnet.public.id
+  route_table_id = aws_route_table.pubRT.id
 }
 
 data "aws_ami" "latest-linux-image" {
@@ -102,8 +119,8 @@ resource "aws_key_pair" "ssh-key" {
 resource "aws_instance" "ec2"{
     ami = data.aws_ami.latest-linux-image.id
     instance_type = var.instance_type
-  #  vpc_id = aws_vpc.vpc.id
+    vpc_id = aws_vpc.vpc.id
     subnet_id = aws_subnet.public.id
-    key_pair = aws_key_pair.ssh-key.key_name
+    key_name = "server-key"
     associate_public_ip_address = true
 }
