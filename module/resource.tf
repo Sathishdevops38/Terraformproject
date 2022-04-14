@@ -104,5 +104,6 @@ resource "aws_instance" "ec2"{
     instance_type = var.instance_type
   #  vpc_id = aws_vpc.vpc.id
     subnet_id = aws_subnet.public.id
-    key_pair = aws_key_pair.ssh-key
+    key_pair = aws_key_pair.ssh-key.key_name
+    associate_public_ip_address = true
 }
