@@ -102,8 +102,7 @@ resource "aws_key_pair" "ssh-key" {
 resource "aws_instance" "ec2"{
     ami = data.aws_ami.latest-linux-image.id
     instance_type = var.instance_type
-    vpc_id = aws_vpc.vpc.id
-    subnet_id = aws_subnet.public_id
-    key_pair = "server-key"
-
+  #  vpc_id = aws_vpc.vpc.id
+    subnet_id = aws_subnet.public.id
+    key_pair = aws_key_pair.ssh-key
 }
