@@ -1,10 +1,9 @@
 variable "region"{
     default = "us-east-2"
 }
-variable "cidr_block"{}
+variable "filename"{}
+variable "function_name"{}
+variable "handler"{}
 variable "env_prefix"{}
-variable "private_block"{}
-variable "public_block"{}
-variable "instance_type"{}
-variable "public_key_location"{}
-variable "my_ip"{}
+variable "description"{}
+variable "runtime"{}
