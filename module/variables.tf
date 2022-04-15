@@ -7,3 +7,4 @@ variable "private_block"{}
 variable "public_block"{}
 variable "instance_type"{}
 variable "public_key_location"{}
+variable "my_ip"{}

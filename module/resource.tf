@@ -69,7 +69,7 @@ resource "aws_route_table" "priRT"{
         nat_gateway_id = aws_nat_gateway.NAT.id 
         }
     tags = {
-           Name = "${var.env_prefix}-NAT" 
+           Name = "${var.env_prefix}-pri" 
     }
 }
 
@@ -77,10 +77,10 @@ resource "aws_route_table" "pubRT"{
     vpc_id = aws_vpc.vpc.id 
     route {
         cidr_block = "0.0.0.0/0"
-        nat_gateway_id = aws_internet_gateway.igw.id
-        }
+        gateway_id = aws_internet_gateway.igw.id
+    }
     tags = {
-           Name = "${var.env_prefix}-IGW" 
+           Name = "${var.env_prefix}-pub" 
     }
 }
 
@@ -95,6 +95,31 @@ resource "aws_route_table_association" "RTA1" {
   route_table_id = aws_route_table.pubRT.id
 }
 
+resource "aws_security_group" "ssh-sg" {
+  name        = "ssh-sg"
+  description = "Allow TLS inbound traffic"
+  vpc_id      = aws_vpc.vpc.id
+
+  ingress {
+    description      = "TLS from VPC"
+    from_port        = 22
+    to_port          = 22
+    protocol         = "tcp"
+    cidr_blocks      = [var.my_ip]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  tags = {
+    Name = "${var.env_prefix}-sg"
+  }
+}
 data "aws_ami" "latest-linux-image" {
     most_recent = true
     owners = ["amazon"]
@@ -119,8 +144,12 @@ resource "aws_key_pair" "ssh-key" {
 resource "aws_instance" "ec2"{
     ami = data.aws_ami.latest-linux-image.id
     instance_type = var.instance_type
-    vpc_id = aws_vpc.vpc.id
     subnet_id = aws_subnet.public.id
-    key_name = "server-key"
+    key_name = aws_key_pair.ssh-key.id
+    security_groups = [aws_security_group.ssh-sg.id]
     associate_public_ip_address = true
+    
+    tags = {
+        Name =  "${var.env_prefix}-ec2"
+    }
 }
